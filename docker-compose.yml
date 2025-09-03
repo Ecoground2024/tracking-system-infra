@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  # 1. Serviço do Banco de Dados PostgreSQL
+  postgres-db:
+    image: postgres:16
+    container_name: rules-postgres-db
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: b@ncoPostgr3SQL
+      POSTGRES_DB: foracesso
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - servicos-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U root -d foracesso"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # 2. Serviço da API
+  rules-service:
+    build: .
+    container_name: rules-service-app
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    # A seção 'command' sobrescreve a configuração do application.properties
+    # quando o serviço roda dentro do Docker, forçando a conexão correta.
+    command: >
+      java -jar app.jar
+      --spring.r2dbc.postgres.url=r2dbc:postgresql://postgres-db:5432/foracesso
+      --spring.r2dbc.postgres.username=root
+      --spring.r2dbc.postgres.password=b@ncoPostgr3SQL
+      --spring.r2dbc.sqlserver.url=r2dbc:sqlserver://192.168.1.122:1433/Foracesso
+      --spring.r2dbc.sqlserver.username=FORACESSO
+      --spring.r2dbc.sqlserver.password=FORACESSO
+
+      --spring.rabbitmq.host=rabbitmq
+      --spring.rabbitmq.port=5672
+      --spring.rabbitmq.username=guest
+      --spring.rabbitmq.password=guest
+    networks:
+      - servicos-network
+    restart: on-failure
+
+volumes:
+  postgres_data:
+
+networks:
+  servicos-network:
+    external: true

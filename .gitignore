@@ -1,0 +1,9 @@
+discovery/
+gateway/
+rules-service/
+messaging-broker/
+foracessoModule/
+
+*.log
+*.tmp
+*.bak
