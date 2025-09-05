@@ -2,7 +2,7 @@ discovery/
 gateway/
 rules-service/
 messaging-broker/
-foraesso-module
+foracesso-module/
 
 *.log
 *.tmp
