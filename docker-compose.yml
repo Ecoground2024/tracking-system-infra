@@ -1,57 +1,71 @@
 version: '3.8'
 
 services:
-  # 1. Serviço do Banco de Dados PostgreSQL
-  postgres-db:
-    image: postgres:16
-    container_name: rules-postgres-db
-    environment:
-      POSTGRES_USER: root
-      POSTGRES_PASSWORD: b@ncoPostgr3SQL
-      POSTGRES_DB: foracesso
+
+  discovery:
+    build: ./discovery
+    container_name: discovery
+    ports:
+      - "8761:8761"
+    networks:
+      - tracking-network
+
+  postgres:
+    image: postgres:latest
+    container_name: postgres
     ports:
       - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: foracesso
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: b@ncoPostgr3SQL
     networks:
-      - servicos-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U root -d foracesso"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      - tracking-network
 
-  # 2. Serviço da API
-  rules-service:
-    build: .
-    container_name: rules-service-app
+  rabbitmq:
+    build: ./messaging-broker
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    networks:
+      - tracking-network
+
+  foracesso-module:
+    build: ./foracesso-module
+    container_name: foracesso-module
+    ports:
+      - "8081:8081"
     depends_on:
-      postgres-db:
-        condition: service_healthy
+      - discovery
+    networks:
+      - tracking-network
+
+  rules-service:
+    build: ./rules-service
+    container_name: rules-service
+    ports:
+      - "8082:8082"
+    depends_on:
+      - discovery
+      - postgres
+    networks:
+      - tracking-network
+
+  gateway:
+    build: ./gateway
+    container_name: gateway
     ports:
       - "8080:8080"
-    # A seção 'command' sobrescreve a configuração do application.properties
-    # quando o serviço roda dentro do Docker, forçando a conexão correta.
-    command: >
-      java -jar app.jar
-      --spring.r2dbc.postgres.url=r2dbc:postgresql://postgres-db:5432/foracesso
-      --spring.r2dbc.postgres.username=root
-      --spring.r2dbc.postgres.password=b@ncoPostgr3SQL
-      --spring.r2dbc.sqlserver.url=r2dbc:sqlserver://192.168.1.122:1433/Foracesso
-      --spring.r2dbc.sqlserver.username=FORACESSO
-      --spring.r2dbc.sqlserver.password=FORACESSO
-
-      --spring.rabbitmq.host=rabbitmq
-      --spring.rabbitmq.port=5672
-      --spring.rabbitmq.username=guest
-      --spring.rabbitmq.password=guest
+    depends_on:
+      - discovery
+      - rabbitmq
     networks:
-      - servicos-network
-    restart: on-failure
-
-volumes:
-  postgres_data:
+      - tracking-network
 
 networks:
-  servicos-network:
-    external: true
+  tracking-network:
+    name: tracking-network
