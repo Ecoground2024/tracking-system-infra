@@ -11,7 +11,7 @@ services:
       - tracking-network
 
   postgres:
-    image: postgres:latest
+    image: postgres:17
     container_name: postgres
     ports:
       - "5432:5432"
@@ -19,8 +19,11 @@ services:
       POSTGRES_DB: foracesso
       POSTGRES_USER: root
       POSTGRES_PASSWORD: b@ncoPostgr3SQL
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
     networks:
       - tracking-network
+    restart: unless-stopped
 
   rabbitmq:
     build: ./messaging-broker
@@ -34,22 +37,15 @@ services:
     networks:
       - tracking-network
 
-    postgres:
-      image: postgres:latest
-      container_name: postgres
-      ports:
-        - "5432:5432"
-      environment:
-        POSTGRES_DB: foracesso
-        POSTGRES_USER: root
-        POSTGRES_PASSWORD: b@ncoPostgr3SQL
-      volumes:
-        # >>> dados persistentes no host
-        - /opt/foracesso/postgres/data:/var/lib/postgresql/data
-        # (opcional) scripts .sql/.sh para rodar na inicialização:
-        # - ./postgres/init:/docker-entrypoint-initdb.d:ro
-      networks:
-        - tracking-network
+  foracesso-module:
+    build: ./foracesso-module
+    container_name: foracesso-module
+    ports:
+      - "8081:8081"
+    depends_on:
+      - discovery
+    networks:
+      - tracking-network
 
   rules-service:
     build: ./rules-service
