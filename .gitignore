@@ -3,6 +3,7 @@ gateway/
 rules-service/
 messaging-broker/
 foracesso-module/
+postgres-data/
 
 *.log
 *.tmp
