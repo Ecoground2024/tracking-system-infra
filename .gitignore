@@ -4,6 +4,7 @@ rules-service/
 messaging-broker/
 foracesso-module/
 postgres-data/
+config-server/
 
 *.log
 *.tmp
