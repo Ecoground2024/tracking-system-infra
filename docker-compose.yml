@@ -34,15 +34,22 @@ services:
     networks:
       - tracking-network
 
-  foracesso-module:
-    build: ./foracesso-module
-    container_name: foracesso-module
-    ports:
-      - "8081:8081"
-    depends_on:
-      - discovery
-    networks:
-      - tracking-network
+    postgres:
+      image: postgres:latest
+      container_name: postgres
+      ports:
+        - "5432:5432"
+      environment:
+        POSTGRES_DB: foracesso
+        POSTGRES_USER: root
+        POSTGRES_PASSWORD: b@ncoPostgr3SQL
+      volumes:
+        # >>> dados persistentes no host
+        - /opt/foracesso/postgres/data:/var/lib/postgresql/data
+        # (opcional) scripts .sql/.sh para rodar na inicialização:
+        # - ./postgres/init:/docker-entrypoint-initdb.d:ro
+      networks:
+        - tracking-network
 
   rules-service:
     build: ./rules-service
