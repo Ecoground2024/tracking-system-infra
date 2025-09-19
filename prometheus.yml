@@ -5,8 +5,18 @@ scrape_configs:
   - job_name: 'microservices'
     metrics_path: '/actuator/prometheus'
     static_configs:
-      - targets:
-          - 'discovery:8761'
-          - 'gateway:8080'
-          - 'foracesso-module:8081'
-          - 'rules-service:8082'
+      - targets: ['discovery:8761']
+        labels:
+          job: 'service-discovery'
+
+      - targets: ['gateway:8080']
+        labels:
+          job: 'gateway'
+
+      - targets: ['foracesso-module:8081']
+        labels:
+          job: 'foracesso-module'
+
+      - targets: ['rules-service:8082']
+        labels:
+          job: 'rules-service'
