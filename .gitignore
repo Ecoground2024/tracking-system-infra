@@ -5,6 +5,7 @@ messaging-broker/
 foracesso-module/
 postgres-data/
 tracking-config-server/
+system-config-repo/
 
 *.log
 *.tmp
