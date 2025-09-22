@@ -10,6 +10,19 @@ services:
     networks:
       - tracking-network
 
+  config-server:
+    build: ./tracking-config-server
+    container_name: config-server
+    ports:
+      - "8888:8888"
+    depends_on:
+      - discovery
+    env_file:
+      - ./tracking-config-server/.env   # usa o .env do serviço (GITHUB_USER/TOKEN)
+    networks:
+      - tracking-network
+    restart: unless-stopped
+
   postgres:
     image: postgres:17
     container_name: postgres
@@ -88,6 +101,11 @@ services:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
       - "9090:9090"
+    depends_on:
+      - discovery
+      - rules-service
+      - gateway
+      - foracesso-module
     networks:
       - tracking-network
     restart: unless-stopped
