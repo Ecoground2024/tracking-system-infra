@@ -9,12 +9,9 @@ scrape_configs:
     relabel_configs:
       - source_labels: [__meta_eureka_app_name]
         target_label: application
-        
+
       - source_labels: [__meta_eureka_app_name]
         target_label: job
 
-      - source_labels: [__meta_eureka_app_instance_metadata_management_port]
-        action: replace
-        target_label: __address__
-        regex: (.+)
-        replacement: ${1}/actuator/prometheus
+      - target_label: __metrics_path__
+        replacement: /actuator/prometheus
