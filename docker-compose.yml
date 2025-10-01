@@ -10,22 +10,24 @@ services:
     networks:
       - tracking-network
 
-config-server:
-  build: ./tracking-config-server
-  container_name: config-server
-  ports: ["8888:8888"]
-  depends_on:
-    - discovery
-  env_file:
-    - ./tracking-config-server/.env
-  networks: [tracking-network]
-  restart: unless-stopped
-  healthcheck:
-    test: ["CMD", "curl", "-f", "http://localhost:8888/actuator/health"]
-    interval: 5s
-    timeout: 3s
-    retries: 20
-    start_period: 10s
+  config-server:               # 👈 agora indentado
+    build: ./tracking-config-server
+    container_name: config-server
+    ports:
+      - "8888:8888"
+    depends_on:
+      - discovery
+    env_file:
+      - ./tracking-config-server/.env
+    networks:
+      - tracking-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8888/actuator/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
 
   postgres:
     image: postgres:17
@@ -67,7 +69,8 @@ config-server:
   rules-service:
     build: ./rules-service
     container_name: rules-service
-    ports: ["8082:8082"]
+    ports:
+      - "8082:8082"
     depends_on:
       config-server:
         condition: service_healthy   # <— espera health OK
@@ -83,7 +86,8 @@ config-server:
       SPRING_APPLICATION_NAME: "rules-service"
       SPRING_CONFIG_IMPORT: "optional:configserver:"
       SPRING_CLOUD_CONFIG_URI: "http://config-server:8888"
-    networks: [tracking-network]
+    networks:
+      - tracking-network
     restart: unless-stopped
 
   gateway:
