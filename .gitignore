@@ -10,3 +10,14 @@ system-config-repo/
 *.log
 *.tmp
 *.bak
+.env
+
+# envs
+.env
+*.env
+**/.env
+
+# envs
+.env
+*.env
+**/.env
