@@ -56,26 +56,25 @@ services:
     networks:
       - tracking-network
 
-  foracesso-module:
-    build: ./foracesso-module
-    container_name: foracesso-module
-    ports:
-      - "8081:8081"
-    depends_on:
-      config-server:
-        condition: service_healthy   # opcional, mas recomendado
-      discovery:
-        condition: service_started
-    env_file:
-      - ./.env
-    environment:
-      SPRING_APPLICATION_NAME: "foracesso-module"
-      SPRING_CONFIG_IMPORT: "optional:configserver:"
-      SPRING_CLOUD_CONFIG_URI: "http://config-server:8888"
-    networks:
-      - tracking-network
-    restart: unless-stopped
-
+foracesso-module:
+  build: ./foracesso-module
+  container_name: foracesso-module
+  ports:
+    - "8081:8081"
+  depends_on:
+    config-server:
+      condition: service_healthy   # recomendado
+    discovery:
+      condition: service_started
+  env_file:
+    - ./.env
+  environment:
+    SPRING_APPLICATION_NAME: "foracesso-module"
+    SPRING_CONFIG_IMPORT: "optional:configserver:"
+    SPRING_CLOUD_CONFIG_URI: "http://config-server:8888"
+  networks:
+    - tracking-network
+  restart: unless-stopped
 
   rules-service:
     build: ./rules-service
