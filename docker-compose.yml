@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
 
   discovery:
@@ -9,6 +7,7 @@ services:
       - "8761:8761"
     networks:
       - tracking-network
+    restart: unless-stopped
 
   config-server:
     build: ./tracking-config-server
@@ -23,7 +22,7 @@ services:
       - tracking-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8888/actuator/health"]
+      test: ["CMD", "curl", "-fsS", "http://localhost:8888/actuator/health"]
       interval: 5s
       timeout: 3s
       retries: 20
@@ -55,6 +54,7 @@ services:
       RABBITMQ_DEFAULT_PASS: guest
     networks:
       - tracking-network
+    restart: unless-stopped
 
   foracesso-module:
     build: ./foracesso-module
@@ -75,6 +75,12 @@ services:
     networks:
       - tracking-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8081/actuator/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 15s
 
   rules-service:
     build: ./rules-service
@@ -90,6 +96,8 @@ services:
         condition: service_started
       rabbitmq:
         condition: service_started
+      foracesso-module:
+        condition: service_healthy
     env_file:
       - ./.env
     environment:
@@ -99,6 +107,12 @@ services:
     networks:
       - tracking-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8082/actuator/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 15s
 
   gateway:
     build: ./gateway
@@ -106,10 +120,17 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - discovery
-      - rabbitmq
+      discovery:
+        condition: service_started
+      rabbitmq:
+        condition: service_started
+      rules-service:
+        condition: service_healthy
+      foracesso-module:
+        condition: service_healthy
     networks:
       - tracking-network
+    restart: unless-stopped
 
   prometheus:
     image: prom/prometheus:latest
