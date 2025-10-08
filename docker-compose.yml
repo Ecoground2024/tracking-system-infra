@@ -9,28 +9,28 @@ services:
       - tracking-network
     restart: unless-stopped
 
-config-server:
-  build: ./tracking-config-server
-  container_name: config-server
-  ports:
-    - "8888:8888"
-  depends_on:
-    - discovery
-  # usa profile "native" e aponta pro diretório montado
-  environment:
-    SPRING_PROFILES_ACTIVE: native
-    SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH_LOCATIONS: file:/config
-  volumes:
-    - ./system-config-repo:/config:ro
-  networks:
-    - tracking-network
-  restart: unless-stopped
-  healthcheck:
-    test: ["CMD", "curl", "-fsS", "http://localhost:8888/actuator/health"]
-    interval: 5s
-    timeout: 3s
-    retries: 20
-    start_period: 10s
+  config-server:
+    build: ./tracking-config-server
+    container_name: config-server
+    ports:
+      - "8888:8888"
+    depends_on:
+      - discovery
+    # usa profile "native" e aponta pro diretório montado
+    environment:
+      SPRING_PROFILES_ACTIVE: native
+      SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH_LOCATIONS: file:/config
+    volumes:
+      - ./system-config-repo:/config:ro
+    networks:
+      - tracking-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8888/actuator/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
 
   postgres:
     image: postgres:17
