@@ -161,6 +161,25 @@ services:
       - tracking-network
     restart: unless-stopped
 
+  redis:
+    build: ./redis
+    container_name: redis
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./redis-data:/data
+    networks:
+      - tracking-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
+
 networks:
   tracking-network:
     name: tracking-network
